@@ -94,7 +94,7 @@ head(sbux_ret)
 
 ##Compute continuously compounded 1-month returns
 
-$$r_t=ln(1+R_t)=ln({P_t \over P_{t-1}})=ln(P_t)???ln(P_{t???1})$$
+$$r_t=ln(1+R_t)=ln({P_t \over P_{t-1}})=ln(P_t)-ln(P_{t-1})$$
 
 ```{r}
 # The sbux_df data frame is already loaded in your work space
@@ -167,6 +167,55 @@ plot(sbux_fv, type = "l", col = "blue", lwd = 2, ylab = "Dollars", main = "FV of
 
 ##Compute one simple Starbucks return
 
-```{r}
+Your workspace contains the vector sbux with the adjusted closing price data for Starbucks stock over the period December 2004 through December 2005. Type sbux in the console to have a look at the data.
 
+Use the data in sbux. What is the simple monthly return between the end of December 2004 and the end of January 2005?
+
+```{r}
+#(sbux[2] - sbux[1]) / sbux[1]
+#-13.41%
+```
+
+##Compute one continuously compounded Starbucks return
+
+What is the continuously compounded monthly return between December 2004 and January 2005?
+
+Your workspace still contains the vector sbux with the adjusted closing price data for Starbucks stock over the period December 2004 through December 2005.
+
+```{r}
+#n <- length(sbux)
+#log(sbux[2:n, 1]) - log(sbux[1:(n - 1), 1])
+#-14.39%
+```
+
+##Monthly compounding
+
+Assume that all twelve months have the same return as the simple monthly return between the end of December 2004 and the end of January 2005. What would be the annual return with monthly compounding in that case?
+
+Your workspace still contains the vector sbux with the adjusted closing price data for Starbucks stock over the period December 2004 through December 2005.
+
+```{r}
+(1-0.1341)^12-1
+```
+
+##Simple annual Starbucks return
+
+Use the data in sbux and compute the actual simple annual return between December 2004 and December 2005.
+
+Your workspace still contains the vector sbux with the adjusted closing price data for Starbucks stock over the period December 2004 through December 2005.
+
+```{r}
+#(sbux[length(sbux)] - sbux[1]) / sbux[1]
+#-2.15%
+```
+
+##Annual continuously compounded return
+
+Use the data sbux and compute the actual annual continuously compounded return between December 2004 and December 2005.
+
+Your workspace still contains the vector sbux with the adjusted closing price data for Starbucks stock over the period December 2004 through December 2005.
+
+```{r}
+#natural logarithm of one plus annual return
+log(1-0.0215)
 ```
