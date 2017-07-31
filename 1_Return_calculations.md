@@ -83,7 +83,7 @@ head(closing_prices)
 ## 6      1.44
 ```
 
-##Find indices associated with the dates 3/1/1994 and 3/1/1995
+## Find indices associated with the dates 3/1/1994 and 3/1/1995
 
 
 ```r
@@ -95,7 +95,7 @@ index_2 <- which(sbux_df$Date == "3/1/1995")
 some_prices <- sbux_df[index_1:index_2, 'Adj.Close']
 ```
 
-##Subset directly on dates
+## Subset directly on dates
 
 
 ```r
@@ -122,7 +122,7 @@ price_1 <- sbux_prices_df["3/1/1994", 1]
 price_2 <- sbux_prices_df["3/1/1995", 1]
 ```
 
-##Plot the price data
+## Plot the price data
 
 
 ```r
@@ -138,7 +138,7 @@ plot(sbux_df$Adj.Close, type = "l", col = "blue", lwd = 2, ylab = "Adjusted clos
 
 ![](1_Return_calculations_files/figure-html/unnamed-chunk-6-2.png)<!-- -->
 
-##Calculate simple returns
+## Calculate simple returns
 
 $$R_{t} = {P_t-{P_{t-1}} \over P_{t-1}}$$
 
@@ -171,7 +171,7 @@ head(sbux_ret)
 ##  0.01769912  0.24347826  0.02097902 -0.03424658  0.02127660  0.13194444
 ```
 
-##Compute continuously compounded 1-month returns
+## Compute continuously compounded 1-month returns
 
 $$r_t=ln(1+R_t)=ln({P_t \over P_{t-1}})=ln(P_t)-ln(P_{t-1})$$
 
@@ -199,7 +199,7 @@ head(sbux_ccret)
 ##  0.01754431  0.21791250  0.02076199 -0.03484673  0.02105341  0.12393690
 ```
 
-##Compare simple and continuously compounded returns
+## Compare simple and continuously compounded returns
 
 
 ```r
@@ -239,7 +239,7 @@ head(cbind(sbux_ret, sbux_ccret))
 ## 9/1/1993  0.13194444  0.12393690
 ```
 
-##Graphically compare the simple and continuously compounded returns
+## Graphically compare the simple and continuously compounded returns
 
 
 ```r
@@ -258,7 +258,7 @@ lines(sbux_ccret, type = "l", col = "red", lwd = 2, ylab = "Return")
 
 ![](1_Return_calculations_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
-##Calculate growth of $1 invested in SBUX
+## Calculate growth of $1 invested in SBUX
 
 
 ```r
@@ -277,7 +277,7 @@ plot(sbux_fv, type = "l", col = "blue", lwd = 2, ylab = "Dollars", main = "FV of
 
 ![](1_Return_calculations_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 
-##Compute one simple Starbucks return
+## Compute one simple Starbucks return
 
 Your workspace contains the vector sbux with the adjusted closing price data for Starbucks stock over the period December 2004 through December 2005. Type sbux in the console to have a look at the data.
 
@@ -289,7 +289,7 @@ Use the data in sbux. What is the simple monthly return between the end of Decem
 #-13.41%
 ```
 
-##Compute one continuously compounded Starbucks return
+## Compute one continuously compounded Starbucks return
 
 What is the continuously compounded monthly return between December 2004 and January 2005?
 
@@ -302,7 +302,7 @@ Your workspace still contains the vector sbux with the adjusted closing price da
 #-14.39%
 ```
 
-##Monthly compounding
+## Monthly compounding
 
 Assume that all twelve months have the same return as the simple monthly return between the end of December 2004 and the end of January 2005. What would be the annual return with monthly compounding in that case?
 
@@ -317,7 +317,7 @@ Your workspace still contains the vector sbux with the adjusted closing price da
 ## [1] -0.8223305
 ```
 
-##Simple annual Starbucks return
+## Simple annual Starbucks return
 
 Use the data in sbux and compute the actual simple annual return between December 2004 and December 2005.
 
@@ -329,7 +329,7 @@ Your workspace still contains the vector sbux with the adjusted closing price da
 #-2.15%
 ```
 
-##Annual continuously compounded return
+## Annual continuously compounded return
 
 Use the data sbux and compute the actual annual continuously compounded return between December 2004 and December 2005.
 
