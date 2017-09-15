@@ -135,6 +135,7 @@ plot(ma1_sim, type = "l", main = "MA(1) Process: mu = 0.05, theta = 0.9", xlab =
 abline(h = 0)
 
 # Second plot: Theoretical ACF
+plot(1:10, acf_ma1_model[2:11], type = "h", col = "blue", main = "theoretical ACF")
 ```
 
 ![](4_Simulating_time_series_data_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
