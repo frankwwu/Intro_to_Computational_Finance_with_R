@@ -1,0 +1,323 @@
+---
+title: "Lab 8 Computing efficient portfolios using matrix algebra"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+https://campus.datacamp.com/courses/computational-finance-and-financial-econometrics-with-r/lab-8-computing-efficient-portfolios-using-matrix-algebra?ex=1
+
+## Loading in your data set
+
+In this final lab you continue your exploration of portfolio theory. Let us first load the data set <code>returns_df</code> into the workspace. This data set contains the monthly returns on the Boeing, Nordstrom, Starbucks and Microsoft stock from March 1995 up to January 2000.
+
+You can find the data set at http://s3.amazonaws.com/assets.datacamp.com/course/compfin/lab9.RData.
+
+### Instructions
+
+* Load the working environment that contains the data set with the help of <code>load()</code>.
+* Use <code>head()</code> and <code>tail()</code> to explore the <code>returns_df</code> data set.
+* The code chunks to create the timeplots of stocks on separate charts or within the same graph are provided. Make sure to have a close look at these.
+
+```{r warning=FALSE, message=FALSE}
+# All data and CER parameters are preloaded in your workspace.  Type ls() in the console to see them.
+
+# Load the relevant packages
+library("zoo")
+
+# Load the working environment
+load(url("http://s3.amazonaws.com/assets.datacamp.com/course/compfin/lab9.RData"))
+
+# Explore the data set
+head(returns_df)
+tail(returns_df)
+
+# Timeplots with stocks on individual graphs
+my.panel <- function(...) {
+  lines(...)
+  abline(h = 0)
+}
+plot(returns_df, lwd = 2, panel = my.panel, col = "blue")
+
+# Timeplots with stocks on same graph
+plot(returns_df, main = "Returns", col = 1:4, lwd = 2)
+abline(h = 0)
+legend(x = "bottomleft", legend = colnames(returns_df), col = 1:4, lwd = 2)
+```
+
+## The CER model
+
+Before diving into the actual arithmetics, you first need to calculate the parameters of the constant expected return model (CER). Make use of the data in <code>returns_df</code> to estimate the model parameters for all four stocks.
+
+### Instructions
+
+* Assign to <code>sigma2_month</code> the estimates of $\sigma_i^2$ for all four assets.
+* Calculate <code>sigma_month</code>, the estimates of $\sigma_i$ for all four assets.
+* Estimate the correlations $\rho_{ij}$ between all stocks, and assign the result to <code>cor_mat_month</code>.
+* Create the pairwise scatterplots between all four stocks. Use <code>coredata()</code> to extract the core data from returns_df and <code>pairs()</code> to create a matrix of scatter plots. Take the color <code>blue</code> and use 16 for points <code>pch</code>.
+
+```{r}
+# All data is preloaded in your workspace.  Type ls() in the console to see what has been loaded.
+
+# Parameters CER model
+mu_hat_month <- apply(returns_df, 2, mean)
+mu_hat_month
+sigma2_month <- apply(returns_df, 2, var)
+sigma2_month
+sigma_month <- apply(returns_df, 2, sd)
+sigma_month
+cov_mat_month <- var(returns_df)
+cov_mat_month
+cor_mat_month <- cor(returns_df)
+cor_mat_month
+
+# Pairwise scatterplots
+pairs(coredata(returns_df), col="blue", pch=16)
+```
+
+## Correlation
+
+What is the correlation between the Nordstrom stock and the Boeing stock?
+
+*Note that all data and CER parameters are preloaded in your workspace. Type <code>ls()</code> in the console to see them.*
+
+```{r}
+cor_mat_month
+0.1025
+```
+
+## The global minimum variance portfolio - Part One
+
+In the previous lab you already determined the global minimum variance portfolio if short sales are allowed.
+
+Let us do a quick recap here: use <code>globalMin.portfolio()</code> to calculate the global minimum variance portfolio for your four stocks when you are allowed to take short positions.
+
+###Instructions
+
+* Use the <code>globalMin.portfolio()</code> function to calculate the global minimum variance portfolio here.
+* Use <code>plot()</code> to visualize the weights of your four stocks in the global minimum variance portfolio.
+
+```{r}
+# All data and CER parameters are preloaded in your workspace.  Type ls() in the console to see them.
+
+# Calculate the global minimum variance portfolio
+global_min_var_portfolio <- globalMin.portfolio(mu_hat_month, cov_mat_month,shorts=TRUE)
+global_min_var_portfolio
+
+# Plot the portfolio weights of our four stocks
+plot(global_min_var_portfolio, col=as.factor(global_min_var_portfolio$weights))
+```
+
+## Standard deviation
+
+What is the standard deviation of the global minimum variance portfolio that you have just calculated?
+
+*Note that all data and CER parameters are preloaded in your workspace. Type <code>ls()</code> in the console to see them.*
+
+```{r}
+global_min_var_portfolio
+0.0593
+```
+
+## The global minimum variance portfolio - Part Two
+
+Now you want to construct the global minimum variance portfolio under the condition that short sales are not allowed. The Markowitz portfolio optimization problem for the minimum variance portfolio with no short sales restrictions can be described as follows:
+
+<center>$\min\limits_x \sigma_{p,x}^2=x^\prime\sum x$, subject to</center>
+
+
+$$x^\prime 1=1$$
+
+$$x_i \geq 0,$$
+with $x$ the vector of portfolio weights, $\sigma_{p,x}^2$ and $\mu_{p,x}$ the portfolio variance and expected return respectively, $\mu$ the vector of expected returns and $\sum$ the covariance matrix of the returns.
+
+As seen in the lectures, the portfolio optimization problem with inequality constraints can be set up as a quadratic programming problem. Quadratic programming problems are of the form:
+<center>$\min\limits_x \frac{1}{2}x^\prime Dx-d^\prime x$, subject to</center>
+<center>$A_{neq}^\prime x \geq b_{neq}$, for m inequality constraints, and </center>
+<center>$A_{eq}^\prime x=b_{neq}$, for $l$ equality constraints,</center>
+
+where $D$ is a $n \times n$ matrix, $x$ and $d$ are $n \times 1$ vectors, $A^\prime_{neq}$ is an $m \times n$ matrix, $b_{neq}$ is an $m \times 1$ vector, $A^\prime_{eq}$ is an $l \times n$ matrix, and $b_{eq}$ is an $l \times 1$ vector.
+
+Quadratic programming problems can be solved with the R package <code>quadprog</code> and the <code>solve.QP()</code> function. In the next exercise you will discover a more easy way to do this with the help of <code>globalMin.portfolio()</code>.
+
+### Instructions
+
+* The restriction matrices are already set up. Make sure to study their output.
+* Use these restriction matrices and the global minimum variance portfolio equality constraint to minimize the portfolio variance via <code>solve.QP()</code>. Assign the result to <code>quad_prog</code>.
+
+```{r warning=FALSE, message=FALSE}
+library(quadprog)
+# All data and CER parameters are preloaded in your workspace.  Type ls() in the console to see them.
+
+# set restriction matrices
+D_matrix <- 2 * cov_mat_month
+D_matrix
+d_vector <- rep(0, 4)
+d_vector
+A_matrix <- cbind(rep(1, 4), diag(4))
+A_matrix
+b_vector <- c(1, rep(0, 4))
+b_vector
+
+# use solve.QP to minimize portfolio variance
+quad_prog <- solve.QP(Dmat = D_matrix,dvec = d_vector, Amat = A_matrix, bvec = b_vector, meq = 1) 
+quad_prog
+```
+
+## The global minimum variance portfolio - End game
+
+Even though the previous exercise provided a good insight in the calculation of a global minimum variance portfolio when short sales are not allowed, this way of working is somewhat complex.
+
+One of the great things of R is that you can "hide" this complexity in a function and/or package. You provide the input to the function via its arguments, and R does the rest.
+
+So instead of calculating the global minimum variance portfolio via the <code>solve.QP()</code> function, you can also use <code>globalMin.portfolio()</code> function. <code>globalMin.portfolio()</code> has an argument <code>shorts</code> and if you set this argument equal to <code>FALSE</code>, short sales are not allowed. In the background it is still solved as a quadratic programming problem, but as a user you are spared from these underlying details.
+
+You can always check the underlying code of the function by typing <code>globalMin.portfolio</code> in the console.
+
+### Instructions
+
+Calculate the composition of the global minimum variance portfolio with no short sales allowed. This time using the <code>globalMin.portfolio()</code> instead of <code>solve.QP()</code> and the restriction matrices.
+
+```{r}
+# All data and CER parameters are preloaded in your workspace.  Type ls() in the console to see them.
+
+# The global minimum variance portfolio
+global_min_var_portfolio <- globalMin.portfolio(mu_hat_month, cov_mat_month, shorts=FALSE)
+
+# Print out global_min_var_portfolio
+global_min_var_portfolio
+```
+
+## An efficient portfolio
+100xp
+You need to construct an efficient portfolio that uses the maximum average return as the target return.
+
+Consider two different scenarios: a scenario where short selling is allowed, and a scenario where short selling is forbidden. The minimization problem if short selling is allowed is:
+
+<center>$\min\limits_m \sigma^2_p=x^\prime \sum x$, subject to</center>
+<center>$x^\prime \mu = \mu_0$,</center>
+<center>$x^\prime 1=1$,</center>
+with $\mu_0$ the target return and other symbols as defined before.
+
+If you do not allow for short sales, the following constraint is added:
+
+<center>$x_i\geq0$ for all $i$.</center>
+
+### Instructions
+
+Run the code that calculates your efficient portfolio characteristics for both cases, that is, one where short sales is allowed and one where short sales is not allowed. The results are assigned to <code>efficient_porfolio_short</code> and <code>efficient_porfolio_no_short</code>. Afterwards, the weights of the stocks in both portfolios are plotted.
+
+```{r}
+# All data and CER parameters are preloaded in your workspace.  Type ls() in the console to see them.
+
+# highest average return
+mu_target <- max(mu_hat_month)
+
+# short sales allowed
+efficient_porfolio_short <- efficient.portfolio(mu_hat_month, cov_mat_month, mu_target, shorts = TRUE)
+efficient_porfolio_short
+plot(efficient_porfolio_short)
+
+# no short sales allowed
+efficient_porfolio_no_short <- efficient.portfolio(mu_hat_month, cov_mat_month, mu_target, shorts = FALSE)
+efficient_porfolio_no_short
+plot(efficient_porfolio_no_short)
+```
+
+## The weight of Boeing
+
+Look back at the efficient portfolio that you have just calculated. What is the weight of the Boeing stock under the "shorting not allowed" condition?
+
+*Note that all data and CER parameters are preloaded in your workspace. Type <code>ls()</code> in the console to see them.*
+
+```{r}
+efficient_porfolio_no_short
+0
+```
+
+## The efficient frontier
+
+Using the fact that all efficient portfolios can be written as a convex combination of two efficient portfolios, you can compute efficient portfolios as convex combinations of the global minimum variance portfolio and the efficient portfolio calculated in the previous exercise:
+
+$$z=\alpha*m+(1-\alpha)*x$$
+
+for values of $\alpha$ being between $???1$ and $1$, with mm the vector of portfolio weights of the global minimum variance portfolio and with $x$ the vector of portfolio weights of the efficient portfolio that was calculated in the previous exercise.
+
+### Instructions
+
+Run the code. It uses the <code>efficient.frontier()</code> function to calculate the expected returns and standard deviation of the portfolios lying on the curve. Afterwards, it makes a plot of the efficient frontier curve via <code>plot()</code>. Set the colors of the dots to blue, the <code>lwd</code> argument to 2, and make sure that the stock names are displayed.
+
+```{r}
+# All data and CER parameters are preloaded in your workspace.  Type ls() in the console to see them.
+
+# The efficient frontier of risky assets
+efficient_frontier <- efficient.frontier(mu_hat_month, cov_mat_month, alpha.min = -1, alpha.max = 1)
+
+# Generate summary
+summary(efficient_frontier)
+
+# Plot
+plot(efficient_frontier, plot.assets = TRUE, col = "blue", lwd = 2)
+```
+
+## The tangency portfolio
+100xp
+Let us see how the weights of the underlying assets of the tangency portfolio depend on whether or not short positions are allowed.
+
+Assume the risk-free rate is 0.005 ($r_f$ = 0.5%) per month. The tangency portfolio can be found via:
+
+<center>$\max\limits_t slope=\dfrac{\mu_p-r_f}{\sigma_p}$, subject to</center>
+$$\mu_p=t^\prime\mu$$
+$$\sigma_p=(t^\prime \sum t)^{1/2}$$
+$$t^\prime1=1,$$
+with $\mu_p$ and $\sigma_p$ the portfolio return and standard deviation respectively, $t$ the vector of portfolio weights, $\mu$ the vector of expected returns and $\sum$ the covariance matrix of the returns.
+
+If you add the condition that no short positions are allowed, the additional constraint that is to be added is $x_i\geq$ for $i=1,...,4$.
+
+Luckily, the underlying arithmetics are encapsulated in the R function <code>tangency.portfolio()</code>. Again, smart use of these functions can make your work as a financial analyst considerably lighter.
+
+### Instructions
+
+* Run the code. It assigns the monthly risk-free rate to <code>t_bill_rate</code> and uses the <code>tangency.portfolio()</code> function to calculate the efficient portfolio characteristics for both cases, that is, one where short sales is allowed, and one where short sales is not allowed. Study the generated plots that represent the weights of the stocks in both portfolios.
+
+```{r}
+# All data and CER parameters are preloaded in your workspace.  Type ls() in the console to see them.
+
+# risk free rate
+t_bill_rate <- 0.005
+
+# Tangency portfolio short sales allowed
+tangency_portfolio_short <- tangency.portfolio(mu_hat_month, cov_mat_month, risk.free = t_bill_rate, shorts = TRUE)
+# Summary
+summary(tangency_portfolio_short)
+# Plot
+plot(tangency_portfolio_short)
+
+# Tangency portfolio short sales not allowed
+tangency_portfolio_no_short <- tangency.portfolio(mu_hat_month, cov_mat_month, risk.free = t_bill_rate, shorts = FALSE)
+# Summary
+summary(tangency_portfolio_no_short)
+# Plot
+plot(tangency_portfolio_no_short)
+```
+
+## The weight of Boeing ... again
+
+If short sales is not allowed in your tangency portfolio, what is the weight of Boeing stock?
+
+*Note that all data and CER parameters are preloaded in your workspace. Type <code>ls()</code> in the console to see them.*
+
+```{r}
+tangency_portfolio_no_short
+0.0171
+```
+
+## <span style="color:Teal">You completed *Intro to Computational Finance with R*</span>
+
+XP POINTS EARNED	7,700
+
+EXERCISES COMPLETED	87
+
+HINTS USED	0
+
+SOLUTIONS USED	0
